@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "FlowFocus",
+  "version": "1.0",
+  "description": "Block distractions and boost your productivity.",
+  "icons": {
+    "48": "icons/icon.png"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "FlowFocus Settings"
+  },
+  "options_page": "blockedsites.html",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "permissions": ["declarativeNetRequest", "storage"],
+  "host_permissions": ["<all_urls>"]
+}

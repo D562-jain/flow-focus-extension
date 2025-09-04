@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        width: 300px;
+        padding: 15px;
+        font-family: Arial;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Blocked Sites</h3>
+    <p>Add websites to block (e.g., youtube.com, reddit.com):</p>
+    <input type="text" id="newSite" placeholder="e.g., twitter.com" />
+    <button id="addButton">Add</button>
+    <ul id="siteList"></ul>
+
+    <h3>Allowed Sites (Always Accessible)</h3>
+    <p>
+      Websites for learning and research (e.g., wikipedia.org,
+      stackoverflow.com):
+    </p>
+    <input type="text" id="newAllowedSite" placeholder="e.g., wikipedia.org" />
+    <button id="addAllowedButton">Add to Allow List</button>
+    <ul id="allowedList"></ul>
+    <script src="blockedsites.js"></script>
+  </body>
+</html>
