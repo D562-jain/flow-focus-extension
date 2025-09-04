@@ -1,3 +1,4 @@
+// DOM Elements
 const allowedList = document.getElementById("allowedList");
 const newAllowedInput = document.getElementById("newAllowedSite");
 const addAllowedButton = document.getElementById("addAllowedButton");
@@ -5,7 +6,22 @@ const siteList = document.getElementById("siteList");
 const newSiteInput = document.getElementById("newSite");
 const addButton = document.getElementById("addButton");
 
-// Load and display the current list
+// Function to extract only the domain from user input
+function extractDomain(input) {
+  // Remove http://, https://, www., and any paths
+  let domain = input.replace(/^(https?:\/\/)?(www\.)?/i, ""); // Remove protocol and www
+  domain = domain.split("/")[0]; // Remove everything after the first slash
+  domain = domain.split("?")[0]; // Remove query parameters
+  domain = domain.split(":")[0]; // Remove port numbers
+
+  // Return only if it looks like a valid domain
+  if (domain.includes(".") && !domain.includes(" ")) {
+    return domain;
+  }
+  return null; // Invalid input
+}
+
+// Load and display the current blocked sites list
 function loadSites() {
   chrome.storage.sync.get({ blockedSites: [] }, function (data) {
     siteList.innerHTML = "";
@@ -21,18 +37,28 @@ function loadSites() {
   });
 }
 
-// Add a new site
+// Add a new site to block (WITH DOMAIN VALIDATION)
 function addSite() {
-  const site = newSiteInput.value.trim();
-  if (!site) return;
+  const input = newSiteInput.value.trim();
+  if (!input) return;
+
+  // Extract only the domain from whatever user typed
+  const domain = extractDomain(input);
+  if (!domain) {
+    alert(
+      'Please enter a valid domain (e.g., "youtube.com" or "www.youtube.com")'
+    );
+    return;
+  }
+
   chrome.storage.sync.get({ blockedSites: [] }, function (data) {
-    const updatedSites = [...new Set([...data.blockedSites, site])]; // Avoid duplicates
+    const updatedSites = [...new Set([...data.blockedSites, domain])]; // Avoid duplicates
     chrome.storage.sync.set({ blockedSites: updatedSites }, loadSites);
     newSiteInput.value = "";
   });
 }
 
-// Remove a site
+// Remove a site from block list
 function removeSite(siteToRemove) {
   chrome.storage.sync.get({ blockedSites: [] }, function (data) {
     const updatedSites = data.blockedSites.filter(
@@ -42,15 +68,7 @@ function removeSite(siteToRemove) {
   });
 }
 
-// Event Listeners
-addButton.addEventListener("click", addSite);
-newSiteInput.addEventListener("keypress", (e) => {
-  if (e.key === "Enter") addSite();
-});
-
-// Initial load
-loadSites();
-
+// Load and display allowed sites
 function loadAllowedSites() {
   chrome.storage.sync.get({ allowedSites: [] }, function (data) {
     allowedList.innerHTML = "";
@@ -66,7 +84,7 @@ function loadAllowedSites() {
   });
 }
 
-// Add function to remove from allow list
+// Remove from allow list
 function removeAllowedSite(siteToRemove) {
   chrome.storage.sync.get({ allowedSites: [] }, function (data) {
     const updatedSites = data.allowedSites.filter(
@@ -76,12 +94,20 @@ function removeAllowedSite(siteToRemove) {
   });
 }
 
-// Add function to add to allow list
+// Add to allow list
 function addAllowedSite() {
-  const site = newAllowedInput.value.trim();
-  if (!site) return;
+  const input = newAllowedInput.value.trim();
+  if (!input) return;
+
+  // Extract only the domain from whatever user typed
+  const domain = extractDomain(input);
+  if (!domain) {
+    alert('Please enter a valid domain (e.g., "wikipedia.org")');
+    return;
+  }
+
   chrome.storage.sync.get({ allowedSites: [] }, function (data) {
-    const updatedSites = [...new Set([...data.allowedSites, site])];
+    const updatedSites = [...new Set([...data.allowedSites, domain])];
     chrome.storage.sync.set({ allowedSites: updatedSites }, function () {
       loadAllowedSites();
       newAllowedInput.value = "";
@@ -89,11 +115,18 @@ function addAllowedSite() {
   });
 }
 
-// Add event listeners
+// Event Listeners
+addButton.addEventListener("click", addSite);
+newSiteInput.addEventListener("keypress", (e) => {
+  if (e.key === "Enter") addSite();
+});
+
 addAllowedButton.addEventListener("click", addAllowedSite);
 newAllowedInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") addAllowedSite();
 });
 
-// Load allowed sites on page load
+// Initial load
+loadSites();
 loadAllowedSites();
+
