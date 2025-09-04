@@ -22,7 +22,7 @@ function connectForKeepAlive() {
 }
 connectForKeepAlive(); // Start the keep-alive on script load.
 
-// 2. YOUR ORIGINAL FUNCTION (with logs)
+// 2. Main blocking function
 async function updateBlockingRules() {
   console.log("(1) updateBlockingRules() function was called!");
 
@@ -44,15 +44,34 @@ async function updateBlockingRules() {
   );
   console.log("(2.5) Sites that will actually be blocked:", sitesToBlock);
 
-  const rules = sitesToBlock.map((domain, index) => ({
-    id: index + 1,
-    priority: 1,
-    action: { type: "block" },
-    condition: {
-      urlFilter: `||${domain}^`,
-      resourceTypes: ["main_frame"],
-    },
-  }));
+  // VALIDATION: Only process valid domains
+  const validSitesToBlock = sitesToBlock.filter((domain) => {
+    if (domain.includes(".") && !domain.includes(" ")) {
+      return true;
+    } else {
+      console.warn(`Invalid domain format: "${domain}". Skipping.`);
+      return false;
+    }
+  });
+
+  console.log("(2.6) Valid sites to block:", validSitesToBlock);
+
+  const rules = validSitesToBlock.map((domain, index) => {
+    const urlFilter = `||${domain}^`;
+    console.log(
+      `Creating rule ${index + 1} for: ${domain} (filter: ${urlFilter})`
+    );
+
+    return {
+      id: index + 1,
+      priority: 1,
+      action: { type: "block" },
+      condition: {
+        urlFilter: urlFilter,
+        resourceTypes: ["main_frame"],
+      },
+    };
+  });
 
   console.log("(3) Converted them into these rules:", rules);
 
@@ -67,10 +86,13 @@ async function updateBlockingRules() {
   }
 }
 
-// 3. Listen for storage changes
+// 3. Listen for storage changes - FIXED VERSION
 chrome.storage.onChanged.addListener((changes, namespace) => {
-  console.log("Storage changed! Triggering rule update...");
-  if (namespace === "sync" && changes.blockedSites) {
+  console.log("Storage changed! Triggering rule update...", changes);
+
+  // Trigger update for ANY change to blockedSites OR allowedSites
+  if (namespace === "sync" && (changes.blockedSites || changes.allowedSites)) {
+    console.log("Relevant change detected. Updating rules...");
     updateBlockingRules();
   }
 });
@@ -79,8 +101,8 @@ chrome.storage.onChanged.addListener((changes, namespace) => {
 console.log("Calling updateBlockingRules for the first time...");
 updateBlockingRules();
 
-// 5. Optional: Log a message every minute to prove it's alive.
-// This helps with debugging.
+// 5. Keep-alive heartbeat
 setInterval(() => {
   console.log("Service worker is still alive...");
 }, 60 * 1000);
+
