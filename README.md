@@ -48,7 +48,7 @@ iv. Select the flow-focus-extension folder
  iii. Set your daily focus goal
 
 ## 📸 Demo
-
+https://drive.google.com/file/d/1FEQGTbc2OvCav-gLXJoKYyOjW-SQ00wH/view?usp=sharing
 ## 🏗️ Architecture
 <img width="913" height="503" alt="image" src="https://github.com/user-attachments/assets/88d34101-81c6-4d7f-8605-306cbcb755f8" />
 
